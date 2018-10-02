@@ -8,35 +8,38 @@
     (:predicates
         (subResurface)
         (subDive)
-        (captainOnBridge)
-        (navOnBridge)
-        (subNot ?x)
-        (subBeen ?x)
-        (subMove ?from ?to)
+        (OnBridge ?who)
+        (subNotBeen ?x)
+        (subRoute ?from ?to)
         (subAt ?x)
+        
+        (giantSquidLoc ?x)
         (giantSquid)
-        (engInEngineering)
+        (InEngineering ?who)
         (electrify ?x)
         (chargeEmpty ?x)
         (recharge ?x)
-        (launch ?x)
-        (retract ?x)
+        
         (holding ?x)
-        (inBay ?x)
-        (inLab ?x)
+        (InLab ?who)
+        (Pic ?what)
+        (DB ?which)
+        (TransferedToDB ?what ?which)
         (report)
-        (scientistInBay)
-        (engineerInBay)
+        (TargetLoc ?what ?where)
+        (AuvInBay ?Type)
+        (AuvLoc ?where)
+        (InBay ?who)
         (picTransferToMem)
-        (comOnBridge)
         (dataTransferToPort)
     )
 
 (:action PersonelToBridge
+    :parameters
+        (?who)
     :effect
         (and
-            (captainOnBridge)
-            (navOnBridge)
+            (OnBridge ?who)
         )
 )
 
@@ -44,8 +47,9 @@
 (:action DiveSequence
     :precondition
         (and
-            (captainOnBridge)
-            (navOnBridge)
+            (OnBridge captain)
+            (OnBridge nav)
+            
         )
     :effect
         (and
@@ -53,24 +57,98 @@
         )
 )
 
-    
-(:action Move
+
+(:action MoveTo
     :parameters
         (?from ?to)
     :precondition
         (and 
             (subDive)
-            (captainOnBridge)
-            (navOnBridge)
-            (subNot ?to)
+            (OnBridge captain)
+            (OnBridge nav)
+            (subNotBeen ?to)
             (subAt ?from)
           
         )
     :effect
         (and
-            (subMove ?from ?to)
+            (subRoute ?from ?to)
+            (not (subAt ?from))
+            (not (subNotBeen ?to))
             (subAt ?to)
-            (subBeen ?from)
+        )
+)
+
+(:action PersonelToLaunchBay
+    :parameters
+        (?who)
+    :effect 
+        (and
+            (InBay ?who)      
+        )
+)
+
+(:action LaunchAUV
+    :parameters
+        (?Type ?where)
+    :precondition
+        (and
+            (subAt ?where)
+            (not(giantSquidLoc ?where))
+            (InBay engineer)
+            (AuvInBay ?Type)
+        )
+    :effect
+        (and    
+            (not(AuvInBay ?Type))
+            (AuvLoc ?where)
+        )
+)
+
+(:action RetractAUV
+    :parameters
+        (?Type ?where)
+    :precondition
+        (and
+            (not(AuvInBay ?Type))
+            (AuvLoc ?where)
+            (InBay engineer)
+            (subAt ?where)
+        )
+    :effect
+        (and 
+            (AuvInBay ?Type)
+        )
+        
+)
+
+
+(:action TakePic
+    :parameters
+        (?where ?what)
+    :precondition
+        (and
+            (not(AuvInBay InspecAuv))
+            (AuvLoc ?where)
+            (TargetLoc ?what ?where)
+        )
+    :effect
+        (and
+            (Pic ?what)
+        )
+)
+
+(:action TransferPicToSub
+    :parameters
+        (?what ?which)
+    :precondition
+        (and
+            (AuvInBay InspecAuv)
+            (Pic ?what)
+        )
+    :effect
+        (and
+            (TransferedToDB ?what ?which)
         )
 )
 
