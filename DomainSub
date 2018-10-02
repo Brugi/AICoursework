@@ -20,16 +20,21 @@
         (chargeEmpty ?x)
         (recharge ?x)
         
-        (holding ?x)
+        (Artifact ?what)
+        (HandEmpty)
+        (Holding ?x)
         (InLab ?who)
+        (ObjectInLab ?what)
         (Pic ?what)
         (DB ?which)
-        (TransferedToDB ?what ?which)
-        (report)
+        (Report ?what)
+        (TransferedToDB ?Type ?what ?which)
         (TargetLoc ?what ?where)
+        (ArtLoc ?what ?where)
         (AuvInBay ?Type)
         (AuvLoc ?where)
         (InBay ?who)
+        (ObjectInBay ?what)
         (picTransferToMem)
         (dataTransferToPort)
     )
@@ -48,8 +53,7 @@
     :precondition
         (and
             (OnBridge captain)
-            (OnBridge nav)
-            
+            (OnBridge navigator)
         )
     :effect
         (and
@@ -57,6 +61,17 @@
         )
 )
 
+(:action ResurfaceSequence
+    :precondition
+        (and
+            (OnBridge captain)
+            (OnBridge navigator)
+        )
+    :effect
+        (and
+            (subResurface)
+        )
+)
 
 (:action MoveTo
     :parameters
@@ -65,7 +80,7 @@
         (and 
             (subDive)
             (OnBridge captain)
-            (OnBridge nav)
+            (OnBridge navigator)
             (subNotBeen ?to)
             (subAt ?from)
           
@@ -138,6 +153,7 @@
         )
 )
 
+
 (:action TransferPicToSub
     :parameters
         (?what ?which)
@@ -148,7 +164,84 @@
         )
     :effect
         (and
-            (TransferedToDB ?what ?which)
+            (TransferedToDB Pic ?what ?which)
+        )
+)
+
+(:action PickUpArtifact
+    :parameters
+        (?what ?where)
+    :precondition
+        (and 
+            (not(AuvInBay ManAuv))
+            (AuvLoc ?where)
+            (ArtLoc ?what ?where)
+            (HandEmpty)
+        )
+    :effect
+        (and
+            (not(HandEmpty))
+            (Holding ?what)
+        )
+)
+
+(:action UnloadArtifact
+    :parameters
+        (?what)
+    :precondition
+        (and
+            (AuvInBay ManAuv)
+            (Holding ?what)
+            (not (ObjectInBay ?what))
+            (not(HandEmpty))
+        )
+    :effect
+        (and
+            (ObjectInBay ?what)
+            (HandEmpty)
+        )
+)
+
+(:action GoToLab
+    :parameters
+        (?what)
+    :precondition
+        (and
+            (InBay scientist)
+            (ObjectInBay ?what)
+        )
+    :effect
+        (and
+            (InLab scientist)
+            (ObjectInLab ?what)
+        )
+)
+
+(:action MakeReport
+    :parameters
+        (?what)
+    :precondition
+        (and
+            (InLab scientist)
+            (ObjectInLab ?what)
+        )
+    :effect
+        (and
+            (Report ?what)
+        )
+)
+
+
+(:action TransferReportToSub
+    :parameters
+        (?what ?which)
+    :precondition
+        (and
+            (Report ?what )
+        )
+    :effect
+        (and
+            (TransferedToDB Report ?what ?which)
         )
 )
 

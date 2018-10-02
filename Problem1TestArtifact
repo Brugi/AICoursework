@@ -1,0 +1,46 @@
+﻿;
+; Problem1: move
+;
+; Author: Mark Schmieg
+;
+(define (problem problem1)
+  (:domain subExploration)
+  
+  (:objects captain navigator engineer scientist
+    SeaPort loc1 loc2 loc3
+    ManAuv InspecAuv
+    SubDb
+    Artifact1 
+    GiantSquid
+    Report Pic
+  )
+  
+  
+  (:init
+    (subAt SeaPort)
+    (subNotBeen loc1)
+    (subNotBeen loc2)
+    (subNotBeen loc3)
+    (ArtLoc Artifact1 loc2)
+    (HandEmpty)
+    (AuvInBay ManAuv)
+    (AuvInBay InspecAuv)
+    (GiantSquidLoc loc1)
+  
+  )
+  
+  
+  (:goal
+    (and
+        (subRoute SeaPort loc3)
+        (subRoute loc3 loc2)
+        (subRoute loc2 loc1)
+        (TransferedToDB Report Artifact1 SubDb)
+       
+        
+    )
+  
+  
+  )
+
+)
