@@ -1,0 +1,77 @@
+﻿;Author: Mark Schmieg
+;
+(define (domain subExploration)
+    (:requirements
+        :strips
+    )
+    
+    (:predicates
+        (subResurface)
+        (subDive)
+        (captainOnBridge)
+        (navOnBridge)
+        (subNot ?x)
+        (subBeen ?x)
+        (subMove ?from ?to)
+        (subAt ?x)
+        (giantSquid)
+        (engInEngineering)
+        (electrify ?x)
+        (chargeEmpty ?x)
+        (recharge ?x)
+        (launch ?x)
+        (retract ?x)
+        (holding ?x)
+        (inBay ?x)
+        (inLab ?x)
+        (report)
+        (scientistInBay)
+        (engineerInBay)
+        (picTransferToMem)
+        (comOnBridge)
+        (dataTransferToPort)
+    )
+
+(:action PersonelToBridge
+    :effect
+        (and
+            (captainOnBridge)
+            (navOnBridge)
+        )
+)
+
+
+(:action DiveSequence
+    :precondition
+        (and
+            (captainOnBridge)
+            (navOnBridge)
+        )
+    :effect
+        (and
+            (subDive)
+        )
+)
+
+    
+(:action Move
+    :parameters
+        (?from ?to)
+    :precondition
+        (and 
+            (subDive)
+            (captainOnBridge)
+            (navOnBridge)
+            (subNot ?to)
+            (subAt ?from)
+          
+        )
+    :effect
+        (and
+            (subMove ?from ?to)
+            (subAt ?to)
+            (subBeen ?from)
+        )
+)
+
+)
