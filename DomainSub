@@ -6,20 +6,21 @@
     )
     
     (:predicates
-        (subResurface)
-        (subDive)
+        (SubResurface)
+        (SubDive)
         (OnBridge ?who)
-        (subNotBeen ?x)
-        (subRoute ?from ?to)
-        (subAt ?x)
+        (SubNotBeen ?x)
+        (SubRoute ?from ?to)
+        (SubAt ?x)
         
-        (giantSquidLoc ?x)
-        (giantSquid)
+        (GiantSquidLoc ?x)
+        (GiantSquid)
         (InEngineering ?who)
         (electrify ?x)
         (chargeEmpty ?x)
-        (recharge ?x)
+        (reharge ?x)
         
+        (Document ?Type ?what)
         (Artifact ?what)
         (HandEmpty)
         (Holding ?x)
@@ -35,10 +36,10 @@
         (AuvLoc ?where)
         (InBay ?who)
         (ObjectInBay ?what)
-        (picTransferToMem)
-        (dataTransferToPort)
+       
     )
-
+    
+;Moves personel to the bridge.
 (:action PersonelToBridge
     :parameters
         (?who)
@@ -48,52 +49,57 @@
         )
 )
 
-
+;Makes the sub submerged.
 (:action DiveSequence
     :precondition
         (and
-            (OnBridge captain)
-            (OnBridge navigator)
+            (OnBridge Captain)
+            (OnBridge Navigator)
+            (SubResurface)
         )
     :effect
         (and
-            (subDive)
+            (SubDive)
         )
 )
 
+;Makes the sub resurfaced.
 (:action ResurfaceSequence
     :precondition
         (and
-            (OnBridge captain)
-            (OnBridge navigator)
+            (OnBridge Captain)
+            (OnBridge Navigator)
+            (SubDive)
         )
     :effect
         (and
-            (subResurface)
+            (SubResurface)
         )
 )
 
+;Moves the sub from one location to another.
 (:action MoveTo
     :parameters
         (?from ?to)
     :precondition
         (and 
-            (subDive)
-            (OnBridge captain)
-            (OnBridge navigator)
-            (subNotBeen ?to)
-            (subAt ?from)
+            (SubDive)
+            (OnBridge Captain)
+            (OnBridge Navigator)
+            (SubNotBeen ?to)
+            (SubAt ?from)
           
         )
     :effect
         (and
-            (subRoute ?from ?to)
-            (not (subAt ?from))
-            (not (subNotBeen ?to))
-            (subAt ?to)
+            (SubRoute ?from ?to)
+            (not (SubAt ?from))
+            (not (SubNotBeen ?to))
+            (SubAt ?to)
         )
 )
 
+;Moves personel to the launch bay.
 (:action PersonelToLaunchBay
     :parameters
         (?who)
@@ -103,14 +109,17 @@
         )
 )
 
+;Launches any type of AUV, it will launch the correct AUV according to the 
+;mission objective. It will not launch if a squid is in the same location as the 
+;sub.
 (:action LaunchAUV
     :parameters
         (?Type ?where)
     :precondition
         (and
-            (subAt ?where)
-            (not(giantSquidLoc ?where))
-            (InBay engineer)
+            (SubAt ?where)
+            (not(GiantSquidLoc ?where))
+            (InBay Engineer)
             (AuvInBay ?Type)
         )
     :effect
@@ -120,6 +129,7 @@
         )
 )
 
+;Retracts the any type of AUV back into the launch bay.
 (:action RetractAUV
     :parameters
         (?Type ?where)
@@ -127,8 +137,8 @@
         (and
             (not(AuvInBay ?Type))
             (AuvLoc ?where)
-            (InBay engineer)
-            (subAt ?where)
+            (InBay Engineer)
+            (SubAt ?where)
         )
     :effect
         (and 
@@ -137,15 +147,17 @@
         
 )
 
-
+;Action of Inspection AUV taking a picture of a target. 
 (:action TakePic
     :parameters
         (?where ?what)
     :precondition
         (and
             (not(AuvInBay InspecAuv))
+            (AuvInBay ManAuv)
             (AuvLoc ?where)
             (TargetLoc ?what ?where)
+            (SubAt ?where)
         )
     :effect
         (and
@@ -153,30 +165,51 @@
         )
 )
 
-
+;Transfers the pictures captured to the sub's database.
 (:action TransferPicToSub
     :parameters
-        (?what ?which)
+        (?what )
     :precondition
         (and
             (AuvInBay InspecAuv)
-            (Pic ?what)
+            (Pic ?what )
         )
     :effect
         (and
-            (TransferedToDB Pic ?what ?which)
+            (TransferedToDB Pic ?what SubDB)
         )
 )
+;;
+;(:action TransferPicToSub
+;   :parameters
+;       (?what ?Type )
+;   :precondition
+;        (or
+;            (when (Document Pic ?what)
+;                (and (AuvInBay InspecAuv) (Pic ?what))
+;            )
+;            (when (Document Report ?what)
+;                (and (Report ?what))
+;            )
+;        )
+;    :effect
+;        (and
+;            (TransferedToDB ?Type ?what SubDB)
+;        )
+;)
 
+;Action of the manipulation AUV picking up an artifact.
 (:action PickUpArtifact
     :parameters
         (?what ?where)
     :precondition
         (and 
             (not(AuvInBay ManAuv))
+            (AuvInBay InspecAuv)
             (AuvLoc ?where)
             (ArtLoc ?what ?where)
             (HandEmpty)
+            (SubAt ?where)
         )
     :effect
         (and
@@ -185,6 +218,7 @@
         )
 )
 
+;Unlading the collected artifact from the manipulation AUV.
 (:action UnloadArtifact
     :parameters
         (?what)
@@ -202,12 +236,13 @@
         )
 )
 
+;Scientist bringing the artifact into the lab for examination.
 (:action GoToLab
     :parameters
         (?what)
     :precondition
         (and
-            (InBay scientist)
+            (InBay Scientist)
             (ObjectInBay ?what)
         )
     :effect
@@ -217,12 +252,13 @@
         )
 )
 
+;Scientist makes a report of the artifact.
 (:action MakeReport
     :parameters
         (?what)
     :precondition
         (and
-            (InLab scientist)
+            (InLab Scientist)
             (ObjectInLab ?what)
         )
     :effect
@@ -231,18 +267,37 @@
         )
 )
 
-
+;Transfer of the artifact report to the sub's database.
 (:action TransferReportToSub
     :parameters
-        (?what ?which)
+        (?what )
     :precondition
         (and
             (Report ?what )
         )
     :effect
         (and
-            (TransferedToDB Report ?what ?which)
+            (TransferedToDB Report ?what SubDB)
         )
 )
+
+
+;Data transfer from the sub to the sea port.
+(:action TransferToSeaPort
+    :parameters
+        (?what ?Type)
+    :precondition
+        (and 
+            (OnBridge ComOfficer)
+            (SubResurface)
+            (TransferedToDB ?Type ?what SubDB)
+            
+        )
+    :effect
+        (and
+            (TransferedToDB ?Type ?what SeaPortDB)
+        )
+)
+
 
 )
