@@ -157,7 +157,7 @@
             (AuvInBay ManAuv)
             (AuvLoc ?where)
             (TargetLoc ?what ?where)
-            (SubAt ?where)
+            
         )
     :effect
         (and
