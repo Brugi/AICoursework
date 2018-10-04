@@ -1,0 +1,71 @@
+﻿;
+; Problem1: move
+;
+; Author: Mark Schmieg
+;
+(define (problem problem1)
+  (:domain subExploration)
+  
+  (:objects 
+    Captain Navigator Engineer Scientist ComOfficer - Personel
+    SeaPort loc1 loc2 loc3  -Location
+    ManAuv InspecAuv - Auv
+    SubDB SeaportDB - Database
+    Target1 Artifact1 Artifact2 -Treasures
+    GiantSquid -Threat
+    Report Pic -Documents
+  )
+  
+  
+  (:init
+    (Personel Captain)
+    (Personel Navigator)
+    (Personel Engineer)
+    (Personel Scientist )
+    (Personel ComOfficer )
+    (Location SeaPort )
+    (Location loc1 )
+    (Location loc2 )
+    (Location loc3 )
+    (Auv ManAuv  )
+    (Auv InspecAuv  )
+    (Database SubDB )
+    (Database SeaportDB )
+    (Treasures Target1 )
+    (Treasures Artifact1 )
+    (Treasures Artifact2)
+    (Threat GiantSquid )
+    (Documents Report )
+    (Documents Pic )
+    
+    (SubAt SeaPort)
+    (SubNotBeen loc1)
+    (SubNotBeen loc2)
+    (SubNotBeen loc3)
+    (SubResurface)
+    
+    (TargetLoc Target1 loc3)
+    (ArtLoc Artifact1 loc2)
+    (ArtLoc Artifact2 loc3)
+    (HandEmpty)
+    (AuvInBay ManAuv)
+    (AuvInBay InspecAuv)
+    (GiantSquidLoc loc1)
+  
+  )
+  
+  
+  (:goal
+    (and
+        
+        (TransferedToDB Report Artifact1 SeaPortDB)
+        (TransferedToDB Report Artifact2 SeaPortDB)
+        (TransferedToDB Pic Target1 SeaportDB)
+       
+        
+    )
+  
+  
+  )
+
+)

@@ -29,6 +29,7 @@
         (SubNotBeen ?x)
         (SubRoute ?from ?to)
         (SubAt ?x )
+        (OrderGivenToMove ?fromWho ?ToWho ?from ?to)
         
         (GiantSquidLoc ?x )
         (GiantSquid)
@@ -73,10 +74,12 @@
             (OnBridge Captain)
             (OnBridge Navigator)
             (SubResurface)
+            (not(SubDive))
         )
     :effect
         (and
             (SubDive)
+            (not (SubResurface))
         )
 )
 
@@ -87,11 +90,25 @@
             (OnBridge Captain)
             (OnBridge Navigator)
             (SubDive)
+            (not(SubResurface))
         )
     :effect
         (and
             (SubResurface)
+            (not(SubDive))
         )
+)
+
+(:action GiveOrder
+    :parameters
+        (?from - Location ?to - Location)
+    :precondition
+        (and
+            (OnBridge Captain)
+            (OnBridge Navigator)
+        )
+    :effect 
+        (OrderGivenToMove Captain Navigator ?from ?to)
 )
 
 ;Moves the sub from one location to another.
@@ -100,6 +117,7 @@
         (?from - Location ?to - Location)
     :precondition
         (and 
+            (OrderGivenToMove Captain Navigator ?from ?to )
             (SubDive)
             (OnBridge Captain)
             (OnBridge Navigator)
@@ -138,6 +156,7 @@
             (not(GiantSquidLoc ?where))
             (InBay Engineer)
             (AuvInBay ?Type)
+            (SubDive)
         )
     :effect
         (and    
@@ -156,6 +175,7 @@
             (AuvLoc ?where)
             (InBay Engineer)
             (SubAt ?where)
+            (SubDive)
         )
     :effect
         (and 
@@ -174,7 +194,8 @@
             (AuvInBay ManAuv)
             (AuvLoc ?where)
             (TargetLoc ?what ?where)
-            
+            (SubDive)
+            (SubAt ?where)
         )
     :effect
         (and
@@ -227,6 +248,7 @@
             (ArtLoc ?what ?where)
             (HandEmpty)
             (SubAt ?where)
+            (SubDive)
         )
     :effect
         (and
@@ -305,14 +327,15 @@
         (?what -Treasures ?Type - Documents)
     :precondition
         (and 
-            (OnBridge ComOfficer)
             (SubResurface)
+            (OnBridge ComOfficer)
             (TransferedToDB ?Type ?what SubDB)
             
         )
     :effect
         (and
             (TransferedToDB ?Type ?what SeaPortDB)
+            
         )
 )
 
