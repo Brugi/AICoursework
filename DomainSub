@@ -13,6 +13,7 @@
         Location
         Treasures
         Database
+        Room
     )
     (:predicates
         (Personel ?who)
@@ -22,7 +23,9 @@
         (Treasures ?what)
         (Database ?which)
         (Documents ?Type)
+        (Room ?Room)
         
+        (InRoom ?Room ?who)
         (SubResurface)
         (SubDive)
         (OnBridge ?who)
@@ -32,11 +35,9 @@
         (OrderGivenToMove ?fromWho ?ToWho ?from ?to)
         
         (GiantSquidLoc ?x )
-        (GiantSquid)
         (InEngineering ?who )
-        (electrify ?x)
-        (chargeEmpty ?x)
-        (reharge ?x)
+        (ChargeEmpty)
+        (SubImmobile)
         
         (Document ?Type  ?what )
         (Artifact ?what )
@@ -51,19 +52,21 @@
         (TargetLoc ?what ?where )
         (ArtLoc ?what  ?where )
         (AuvInBay ?Type )
+        (AuvDestroyed)
         (AuvLoc ?where )
         (InBay ?who )
         (ObjectInBay ?what )
+        
        
     )
     
-;Moves personel to the bridge.
-(:action PersonelToBridge
+;Moves personel to a specific room in the sub.
+(:action PersonelToRoom
     :parameters
-        (?who - Personel)
+        (?who - Personel ?Room - Room)
     :effect
         (and
-            (OnBridge ?who)
+            (InRoom ?Room ?who)
         )
 )
 
@@ -71,8 +74,8 @@
 (:action DiveSequence
     :precondition
         (and
-            (OnBridge Captain)
-            (OnBridge Navigator)
+            (InRoom Bridge Captain)
+            (InRoom Bridge Navigator)
             (SubResurface)
             (not(SubDive))
         )
@@ -87,8 +90,8 @@
 (:action ResurfaceSequence
     :precondition
         (and
-            (OnBridge Captain)
-            (OnBridge Navigator)
+            (InRoom Bridge Captain)
+            (InRoom Bridge Navigator)
             (SubDive)
             (not(SubResurface))
         )
@@ -104,8 +107,8 @@
         (?from - Location ?to - Location)
     :precondition
         (and
-            (OnBridge Captain)
-            (OnBridge Navigator)
+            (InRoom Bridge Captain)
+            (InRoom Bridge Navigator)
         )
     :effect 
         (OrderGivenToMove Captain Navigator ?from ?to)
@@ -119,10 +122,12 @@
         (and 
             (OrderGivenToMove Captain Navigator ?from ?to )
             (SubDive)
-            (OnBridge Captain)
-            (OnBridge Navigator)
+            (InRoom Bridge Captain)
+            (InRoom Bridge Navigator)
             (SubNotBeen ?to )
             (SubAt ?from)
+            (not(SubImmobile))
+            (not(ChargeEmpty))
           
         )
     :effect
@@ -134,15 +139,7 @@
         )
 )
 
-;Moves personel to the launch bay.
-(:action PersonelToLaunchBay
-    :parameters
-        (?who - Personel)
-    :effect 
-        (and
-            (InBay ?who )      
-        )
-)
+
 
 ;Launches any type of AUV, it will launch the correct AUV according to the 
 ;mission objective. It will not launch if a squid is in the same location as the 
@@ -154,9 +151,10 @@
         (and
             (SubAt ?where)
             (not(GiantSquidLoc ?where))
-            (InBay Engineer)
+            (InRoom Bay Engineer)
             (AuvInBay ?Type)
             (SubDive)
+            
         )
     :effect
         (and    
@@ -173,7 +171,7 @@
         (and
             (not(AuvInBay ?Type))
             (AuvLoc ?where)
-            (InBay Engineer)
+            (InRoom Bay Engineer)
             (SubAt ?where)
             (SubDive)
         )
@@ -194,8 +192,8 @@
             (AuvInBay ManAuv)
             (AuvLoc ?where)
             (TargetLoc ?what ?where)
-            (SubDive)
             (SubAt ?where)
+            (not (AuvDestroyed))
         )
     :effect
         (and
@@ -210,6 +208,7 @@
     :precondition
         (and
             (AuvInBay InspecAuv)
+            (InRoom Bay Engineer)
             (Pic ?what )
         )
     :effect
@@ -248,7 +247,8 @@
             (ArtLoc ?what ?where)
             (HandEmpty)
             (SubAt ?where)
-            (SubDive)
+            (not (AuvDestroyed))
+            
         )
     :effect
         (and
@@ -265,6 +265,7 @@
         (and
             (AuvInBay ManAuv)
             (Holding ?what)
+            (InRoom Bay Engineer)
             (not (ObjectInBay ?what))
             (not(HandEmpty))
         )
@@ -281,12 +282,12 @@
         (?what -Treasures)
     :precondition
         (and
-            (InBay Scientist)
+            (InRoom Bay Scientist)
             (ObjectInBay ?what)
         )
     :effect
         (and
-            (InLab scientist)
+            (InRoom Lab scientist)
             (ObjectInLab ?what)
         )
 )
@@ -297,7 +298,7 @@
         (?what - Treasures)
     :precondition
         (and
-            (InLab Scientist)
+            (InRoom Lab Scientist)
             (ObjectInLab ?what)
         )
     :effect
@@ -328,7 +329,7 @@
     :precondition
         (and 
             (SubResurface)
-            (OnBridge ComOfficer)
+            (InRoom Bridge ComOfficer)
             (TransferedToDB ?Type ?what SubDB)
             
         )
@@ -339,5 +340,67 @@
         )
 )
 
+(:action GiantSquidAttack
+    :parameters
+        (?where - Location)
+    :precondition
+        (and
+            (SubAt ?where)
+            (GiantSquidLoc ?where)
+        )
+    :effect 
+        (and
+            (SubImmobile)
+        )
+)
+
+(:action SubDefenceSystemEngaged
+    :parameters
+        (?where - Location)
+    :precondition
+        (and
+            (SubAt ?where)
+            (GiantSquidLoc ?where)
+            (SubImmobile)
+            (not (ChargeEmpty))
+            (InRoom Engineering Engineer)
+        )
+    :effect
+        (and
+            (not (GiantSquidLoc ?where))
+            (ChargeEmpty)
+        )
+)
+
+(:action ReloadAndSubFix
+    :precondition
+        (and
+            (SubImmobile)
+            (ChargeEmpty)
+            (InRoom Engineering Mechanic)
+            (InRoom Engineering Engineer)
+        )
+    :effect
+        (and
+            (not (ChargeEmpty))
+            (not (SubImmobile))
+        )
+)
+
+(:action SquidDestroyAUV
+    :parameters 
+        (?where -Location)
+    :precondition
+        (and 
+            (GiantSquidLoc ?where)
+            (SubAt ?where)
+            (AuvLoc ?where)
+            (not (AuvDestroyed))
+        )
+    :effect 
+        (and
+            (AuvDestroyed)
+        )
+)
 
 )
