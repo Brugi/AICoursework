@@ -2,47 +2,64 @@
 ;
 (define (domain subExploration)
     (:requirements
-        :strips
+        :strips :typing
     )
     
+    (:types 
+        Auv
+        Personel 
+        Documents
+        Threat
+        Location
+        Treasures
+        Database
+    )
     (:predicates
+        (Personel ?who)
+        (Location ?x)
+        (Auv ?Type)
+        (Threat ?z)
+        (Treasures ?what)
+        (Database ?which)
+        (Documents ?Type)
+        
         (SubResurface)
         (SubDive)
         (OnBridge ?who)
         (SubNotBeen ?x)
         (SubRoute ?from ?to)
-        (SubAt ?x)
+        (SubAt ?x )
         
-        (GiantSquidLoc ?x)
+        (GiantSquidLoc ?x )
         (GiantSquid)
-        (InEngineering ?who)
+        (InEngineering ?who )
         (electrify ?x)
         (chargeEmpty ?x)
         (reharge ?x)
         
-        (Document ?Type ?what)
-        (Artifact ?what)
+        (Document ?Type  ?what )
+        (Artifact ?what )
         (HandEmpty)
-        (Holding ?x)
-        (InLab ?who)
-        (ObjectInLab ?what)
-        (Pic ?what)
-        (DB ?which)
-        (Report ?what)
-        (TransferedToDB ?Type ?what ?which)
-        (TargetLoc ?what ?where)
-        (ArtLoc ?what ?where)
-        (AuvInBay ?Type)
-        (AuvLoc ?where)
-        (InBay ?who)
-        (ObjectInBay ?what)
+        (Holding ?x )
+        (InLab ?who )
+        (ObjectInLab ?what )
+        (Pic ?what )
+        (DB ?which )
+        (Report ?what )
+        (TransferedToDB ?Type  ?what ?which )
+        (TargetLoc ?what ?where )
+        (ArtLoc ?what  ?where )
+        (AuvInBay ?Type )
+        (AuvLoc ?where )
+        (InBay ?who )
+        (ObjectInBay ?what )
        
     )
     
 ;Moves personel to the bridge.
 (:action PersonelToBridge
     :parameters
-        (?who)
+        (?who - Personel)
     :effect
         (and
             (OnBridge ?who)
@@ -80,32 +97,32 @@
 ;Moves the sub from one location to another.
 (:action MoveTo
     :parameters
-        (?from ?to)
+        (?from - Location ?to - Location)
     :precondition
         (and 
             (SubDive)
             (OnBridge Captain)
             (OnBridge Navigator)
-            (SubNotBeen ?to)
+            (SubNotBeen ?to )
             (SubAt ?from)
           
         )
     :effect
         (and
-            (SubRoute ?from ?to)
-            (not (SubAt ?from))
-            (not (SubNotBeen ?to))
-            (SubAt ?to)
+            (SubRoute ?from  ?to )
+            (not (SubAt ?from ))
+            (not (SubNotBeen ?to ))
+            (SubAt ?to )
         )
 )
 
 ;Moves personel to the launch bay.
 (:action PersonelToLaunchBay
     :parameters
-        (?who)
+        (?who - Personel)
     :effect 
         (and
-            (InBay ?who)      
+            (InBay ?who )      
         )
 )
 
@@ -114,7 +131,7 @@
 ;sub.
 (:action LaunchAUV
     :parameters
-        (?Type ?where)
+        (?Type - Auv ?where - Location)
     :precondition
         (and
             (SubAt ?where)
@@ -132,7 +149,7 @@
 ;Retracts the any type of AUV back into the launch bay.
 (:action RetractAUV
     :parameters
-        (?Type ?where)
+        (?Type - Auv ?where - Location)
     :precondition
         (and
             (not(AuvInBay ?Type))
@@ -150,7 +167,7 @@
 ;Action of Inspection AUV taking a picture of a target. 
 (:action TakePic
     :parameters
-        (?where ?what)
+        (?where - Location ?what - Treasures)
     :precondition
         (and
             (not(AuvInBay InspecAuv))
@@ -168,7 +185,7 @@
 ;Transfers the pictures captured to the sub's database.
 (:action TransferPicToSub
     :parameters
-        (?what )
+        (?what - Treasures)
     :precondition
         (and
             (AuvInBay InspecAuv)
@@ -201,7 +218,7 @@
 ;Action of the manipulation AUV picking up an artifact.
 (:action PickUpArtifact
     :parameters
-        (?what ?where)
+        (?what - Treasures ?where - Location)
     :precondition
         (and 
             (not(AuvInBay ManAuv))
@@ -221,7 +238,7 @@
 ;Unlading the collected artifact from the manipulation AUV.
 (:action UnloadArtifact
     :parameters
-        (?what)
+        (?what - Treasures)
     :precondition
         (and
             (AuvInBay ManAuv)
@@ -239,7 +256,7 @@
 ;Scientist bringing the artifact into the lab for examination.
 (:action GoToLab
     :parameters
-        (?what)
+        (?what -Treasures)
     :precondition
         (and
             (InBay Scientist)
@@ -255,7 +272,7 @@
 ;Scientist makes a report of the artifact.
 (:action MakeReport
     :parameters
-        (?what)
+        (?what - Treasures)
     :precondition
         (and
             (InLab Scientist)
@@ -270,7 +287,7 @@
 ;Transfer of the artifact report to the sub's database.
 (:action TransferReportToSub
     :parameters
-        (?what )
+        (?what -Treasures )
     :precondition
         (and
             (Report ?what )
@@ -285,7 +302,7 @@
 ;Data transfer from the sub to the sea port.
 (:action TransferToSeaPort
     :parameters
-        (?what ?Type)
+        (?what -Treasures ?Type - Documents)
     :precondition
         (and 
             (OnBridge ComOfficer)
