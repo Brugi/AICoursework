@@ -9,7 +9,6 @@
         Auv
         Personel 
         Documents
-        Threat
         Location
         Treasures
         Database
@@ -25,48 +24,49 @@
         (Documents ?Type)
         (Room ?Room)
         
-        (InRoom ?Room ?who)
-        (SubResurface)
-        (SubDive)
-        (OnBridge ?who)
-        (SubNotBeen ?x)
-        (SubRoute ?from ?to)
-        (SubAt ?x )
-        (OrderGivenToMove ?fromWho ?ToWho ?from ?to)
+        (InRoom ?Room ?who)   ;Which personnel is in what room.
+        (SubResurface)        ;Submarine is at the surface.
+        (SubDive)             ;Submarine is underwater.
+        (SubNotBeen ?x)       ;The submarine has not visited that location yet. 
+        (SubRoute ?from ?to)  ;The submarine moves from one location to another.
+        (SubAt ?x )           ;Current location of the submarine.
+        (OrderGivenToMove ?fromWho ?ToWho ?from ?to)  ;Giving orders to move.
         
-        (GiantSquidLoc ?x )
-        (InEngineering ?who )
-        (ChargeEmpty)
-        (SubImmobile)
+        (GiantSquidLoc  ?x )    ;Location of the Squid.
+        (ChargeEmpty)           ;Electric charge is empty.
+        (SubImmobile)           ;Submarine is immobile.
         
-        (Document ?Type  ?what )
-        (Artifact ?what )
-        (HandEmpty)
-        (Holding ?x )
-        (InLab ?who )
-        (ObjectInLab ?what )
-        (Pic ?what )
-        (DB ?which )
-        (Report ?what )
-        (TransferedToDB ?Type  ?what ?which )
-        (TargetLoc ?what ?where )
-        (ArtLoc ?what  ?where )
-        (AuvInBay ?Type )
-        (AuvDestroyed)
-        (AuvLoc ?where )
-        (InBay ?who )
-        (ObjectInBay ?what )
-        
+        (Document ?Type  ?what ) ;Document is a type(picture/report) with  content (Artefact/Target).
+        (HandEmpty)              ;Manipulation AUV's hand is empty.
+        (Holding ?x )            ;what the Manipulation AUV is holding.
+        (ObjectInLab ?what )     ;Artefact in the lab.
+        (Pic ?what )             ;Picture of a target.
+        (Report ?what )          ;Report of an artefact
+        (TransferedToDB ?Type  ?what ?which ) ;Transferring document of what type of what to what DB.
+        (TargetLoc ?what ?where )             ;Target location.
+        (ArtLoc ?what  ?where )               ;Artefact location.
+        (AuvInBay ?Type )                     ;What type of AUV is in the launch bay.
+        (AuvDestroyed ?Type)                        ;Auv is destroyed.  
+        (AuvLoc ?where ?Type)                      ;AUV Location in the water.
+        (ObjectInBay ?what )                  ;Artefact in the launch bay.
+        (Path ?Roomfrom ?Roomto)
        
     )
     
 ;Moves personel to a specific room in the sub.
 (:action PersonelToRoom
     :parameters
-        (?who - Personel ?Room - Room)
+        (?who - Personel ?Roomfrom - Room ?Roomto -Room)
+    :precondition
+        (and 
+            (not (InRoom ?Roomto ?who))
+            (InRoom ?Roomfrom ?who)
+            (Path ?Roomfrom ?Roomto)
+        )
     :effect
         (and
-            (InRoom ?Room ?who)
+            (not(InRoom ?Roomfrom  ?who))
+            (InRoom ?Roomto ?who)
         )
 )
 
@@ -78,6 +78,7 @@
             (InRoom Bridge Navigator)
             (SubResurface)
             (not(SubDive))
+            (not(SubImmobile))
         )
     :effect
         (and
@@ -94,6 +95,7 @@
             (InRoom Bridge Navigator)
             (SubDive)
             (not(SubResurface))
+            (not(SubImmobile))
         )
     :effect
         (and
@@ -128,6 +130,7 @@
             (SubAt ?from)
             (not(SubImmobile))
             (not(ChargeEmpty))
+            
           
         )
     :effect
@@ -136,6 +139,7 @@
             (not (SubAt ?from ))
             (not (SubNotBeen ?to ))
             (SubAt ?to )
+            
         )
 )
 
@@ -146,7 +150,7 @@
 ;sub.
 (:action LaunchAUV
     :parameters
-        (?Type - Auv ?where - Location)
+        (?Type - Auv ?where - Location )
     :precondition
         (and
             (SubAt ?where)
@@ -159,18 +163,18 @@
     :effect
         (and    
             (not(AuvInBay ?Type))
-            (AuvLoc ?where)
+            (AuvLoc ?where ?Type)
         )
 )
 
 ;Retracts the any type of AUV back into the launch bay.
 (:action RetractAUV
     :parameters
-        (?Type - Auv ?where - Location)
+        (?Type - Auv ?where - Location )
     :precondition
         (and
             (not(AuvInBay ?Type))
-            (AuvLoc ?where)
+            (AuvLoc ?where ?Type)
             (InRoom Bay Engineer)
             (SubAt ?where)
             (SubDive)
@@ -190,10 +194,10 @@
         (and
             (not(AuvInBay InspecAuv))
             (AuvInBay ManAuv)
-            (AuvLoc ?where)
+            (AuvLoc ?where InspecAuv)
             (TargetLoc ?what ?where)
             (SubAt ?where)
-            (not (AuvDestroyed))
+            (not (AuvDestroyed InspecAuv))
         )
     :effect
         (and
@@ -216,38 +220,20 @@
             (TransferedToDB Pic ?what SubDB)
         )
 )
-;;
-;(:action TransferPicToSub
-;   :parameters
-;       (?what ?Type )
-;   :precondition
-;        (or
-;            (when (Document Pic ?what)
-;                (and (AuvInBay InspecAuv) (Pic ?what))
-;            )
-;            (when (Document Report ?what)
-;                (and (Report ?what))
-;            )
-;        )
-;    :effect
-;        (and
-;            (TransferedToDB ?Type ?what SubDB)
-;        )
-;)
 
-;Action of the manipulation AUV picking up an artifact.
-(:action PickUpArtifact
+;Action of the manipulation AUV picking up an artefact.
+(:action PickUpArtefact
     :parameters
-        (?what - Treasures ?where - Location)
+        (?what - Treasures ?where - Location ?Type -Auv)
     :precondition
         (and 
             (not(AuvInBay ManAuv))
             (AuvInBay InspecAuv)
-            (AuvLoc ?where)
+            (AuvLoc ?where ManAuv)
             (ArtLoc ?what ?where)
             (HandEmpty)
             (SubAt ?where)
-            (not (AuvDestroyed))
+            (not (AuvDestroyed ManAuv))
             
         )
     :effect
@@ -257,8 +243,8 @@
         )
 )
 
-;Unlading the collected artifact from the manipulation AUV.
-(:action UnloadArtifact
+;Unloading the collected artefact from the manipulation AUV.
+(:action UnloadArtefact
     :parameters
         (?what - Treasures)
     :precondition
@@ -276,23 +262,25 @@
         )
 )
 
-;Scientist bringing the artifact into the lab for examination.
+;Scientist bringing the artefact into the lab for examination.
 (:action GoToLab
     :parameters
         (?what -Treasures)
     :precondition
         (and
             (InRoom Bay Scientist)
+            (not (InRoom Lab Scientist))
             (ObjectInBay ?what)
         )
     :effect
         (and
             (InRoom Lab scientist)
+            (not (InRoom Bay Scientist))
             (ObjectInLab ?what)
         )
 )
 
-;Scientist makes a report of the artifact.
+;Scientist makes a report of the artefact.
 (:action MakeReport
     :parameters
         (?what - Treasures)
@@ -307,7 +295,7 @@
         )
 )
 
-;Transfer of the artifact report to the sub's database.
+;Transfer of the artefact report to the sub's database.
 (:action TransferReportToSub
     :parameters
         (?what -Treasures )
@@ -340,13 +328,16 @@
         )
 )
 
+;Giant Squid is in the same location as the sub, which results in the 
+;Giant Squid attacking and rendering the sub immobile. 
 (:action GiantSquidAttack
     :parameters
-        (?where - Location)
+        (?where - Location )
     :precondition
         (and
             (SubAt ?where)
-            (GiantSquidLoc ?where)
+            (GiantSquidLoc  ?where)
+            (SubDive)
         )
     :effect 
         (and
@@ -354,13 +345,15 @@
         )
 )
 
+;Defence System against the Giant Squid. After an attack the defence is engaged
+;and makes the Giant Squid disappear from the sub's location.
 (:action SubDefenceSystemEngaged
     :parameters
-        (?where - Location)
+        (?where - Location )
     :precondition
         (and
             (SubAt ?where)
-            (GiantSquidLoc ?where)
+            (GiantSquidLoc  ?where)
             (SubImmobile)
             (not (ChargeEmpty))
             (InRoom Engineering Engineer)
@@ -372,6 +365,8 @@
         )
 )
 
+;A mechanic and an engineer need to be in the engineering room to reload a new
+;charge for a future attack, and repair the sub so that it can move again.
 (:action ReloadAndSubFix
     :precondition
         (and
@@ -387,19 +382,22 @@
         )
 )
 
+;This action makes the squid destroy an AUV if the AUV and the squid are in the
+;same location.
 (:action SquidDestroyAUV
     :parameters 
-        (?where -Location)
+        (?where -Location ?Type - Auv)
     :precondition
         (and 
-            (GiantSquidLoc ?where)
-            (SubAt ?where)
-            (AuvLoc ?where)
-            (not (AuvDestroyed))
+            (GiantSquidLoc  ?where)
+            (AuvLoc ?where ?Type)
+            (not (AuvDestroyed ?Type))
+            (not (AuvInBay ?Type))
         )
     :effect 
         (and
-            (AuvDestroyed)
+            (AuvDestroyed ?Type)
+            (not (AuvLoc ?where ?Type))
         )
 )
 

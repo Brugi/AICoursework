@@ -1,0 +1,87 @@
+﻿;
+; Problem2DestroyAUV: The Inspection AUV will start at the same location as a Giant Squid.
+; The Inspection AUV should get destroyed.
+; Author: Mark Schmieg
+;
+(define (problem problem1)
+  (:domain subExploration)
+  
+  (:objects 
+    Captain Navigator Engineer Scientist ComOfficer Mechanic - Personel
+    SeaPort loc1 loc2 loc3  -Location
+    InspecAuv - Auv
+    Engineering Bridge Bay Lab Corridor CaptainRoom Bedroom -Room
+  )
+  
+  
+  (:init
+    (Personel Captain)
+    (Personel Navigator)
+    (Personel Engineer)
+    (Personel Scientist )
+    (Personel ComOfficer )
+    (Personel Mechanic)
+    (Location SeaPort )
+    (Location loc1 )
+    (Location loc2 )
+    (Location loc3 )
+    (Auv InspecAuv  )
+  
+    (Room Engineering)
+    (Room Bridge)
+    (Room Bay)
+    (Room Lab)
+    (Room Corridor)
+    
+    (Path Engineering Corridor)
+    (Path Corridor Engineering)
+    (Path Corridor Bridge)
+    (Path Bridge Corridor)
+    (Path Bay Corridor)
+    (Path Corridor Bay)
+    (Path Lab Corridor)
+    (Path Corridor Lab)
+    (Path Corridor Bedroom)
+    (Path Bedroom Corridor)
+    (Path Corridor CaptainRoom)
+    (Path CaptainRoom Corridor)
+    
+    (InRoom CaptainRoom Captain)
+    (InRoom Bedroom Navigator)
+    (InRoom Bedroom Engineer)
+    (InRoom Bedroom Scientist)
+    (InRoom Bedroom ComOfficer)
+    (InRoom Bedroom Mechanic)
+    
+    (SubAt SeaPort)
+    (SubNotBeen loc1)
+    (SubNotBeen loc2)
+    (SubNotBeen loc3)
+    (SubResurface)
+    
+   
+    (GiantSquidLoc loc3)
+    (GiantSquidLoc loc2)
+    
+    (HandEmpty)
+   
+    (AuvLoc loc3 InspecAuv)
+    
+ 
+  
+  )
+  
+  
+  (:goal
+    (and
+        
+        (AuvDestroyed InspecAuv)
+   
+      
+        
+    )
+  
+  
+  )
+
+)
