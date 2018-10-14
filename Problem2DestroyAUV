@@ -7,7 +7,7 @@
   (:domain subExploration)
   
   (:objects 
-    Captain Navigator Engineer Scientist ComOfficer Mechanic - Personel
+    Captain Navigator Engineer Scientist ComOfficer Mechanic - Personnel
     SeaPort loc1 loc2 loc3  -Location
     InspecAuv - Auv
     Engineering Bridge Bay Lab Corridor CaptainRoom Bedroom -Room
@@ -15,12 +15,12 @@
   
   
   (:init
-    (Personel Captain)
-    (Personel Navigator)
-    (Personel Engineer)
-    (Personel Scientist )
-    (Personel ComOfficer )
-    (Personel Mechanic)
+    (Personnel Captain)
+    (Personnel Navigator)
+    (Personnel Engineer)
+    (Personnel Scientist )
+    (Personnel ComOfficer )
+    (Personnel Mechanic)
     (Location SeaPort )
     (Location loc1 )
     (Location loc2 )

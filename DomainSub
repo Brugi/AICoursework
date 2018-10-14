@@ -7,7 +7,7 @@
     
     (:types 
         Auv
-        Personel 
+        Personnel 
         Documents
         Location
         Treasures
@@ -15,7 +15,7 @@
         Room
     )
     (:predicates
-        (Personel ?who)
+        (Personnel ?who)
         (Location ?x)
         (Auv ?Type)
         (Threat ?z)
@@ -53,10 +53,10 @@
        
     )
     
-;Moves personel to a specific room in the sub.
-(:action PersonelToRoom
+;Moves personnel to a specific room in the sub.
+(:action PersonnelToRoom
     :parameters
-        (?who - Personel ?Roomfrom - Room ?Roomto -Room)
+        (?who - Personnel ?Roomfrom - Room ?Roomto -Room)
     :precondition
         (and 
             (not (InRoom ?Roomto ?who))
